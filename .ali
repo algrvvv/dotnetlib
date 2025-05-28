@@ -1,0 +1,38 @@
+vars:
+  v: "7.0.0"
+
+aliases:
+  db:
+    desc: connect to psql databse
+    cmds:
+      - psql -d lib
+
+  r: 
+    aliases: [run]
+    desc: run dotnet app
+    cmds:
+      - dotnet run
+
+  a:
+    aliases: [add]
+    desc: add pkg
+    cmds:
+      - dotnet add package <p> --version {{v}}
+
+  create-migration:
+    aliases: [cm]
+    desc: create new migration
+    cmds:
+      - dotnet ef migrations add
+
+  remove-migrations:
+    aliases: [rm]
+    desc: undo and remove migrations
+    cmds:
+      - dotnet ef migrations remove
+
+  migrate:
+    aliases: [m]
+    desc: start migration
+    cmds:
+      - dotnet ef database update
