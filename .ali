@@ -9,9 +9,9 @@ aliases:
 
   r: 
     aliases: [run]
-    desc: run dotnet app
+    desc: run dotnet app (using watch)
     cmds:
-      - dotnet run
+      - dotnet watch
 
   a:
     aliases: [add]
