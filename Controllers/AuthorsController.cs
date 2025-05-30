@@ -83,6 +83,9 @@ public class AuthorsController : Controller
             _context.Authors.Add(author);
             await _context.SaveChangesAsync();
             _logger.LogInformation("author {@Author} created successfully", author);
+
+            TempData["Success"] = "Автор добавлен";
+            return RedirectToAction("Index");
         }
         catch (Exception e)
         {
@@ -90,18 +93,16 @@ public class AuthorsController : Controller
             ModelState.AddModelError(string.Empty, "Что то пошло не так");
             return View(author);
         }
-
-        return RedirectToAction("Index");
     }
 
     // <summary>
-    //  открыть страницу для редактирования
+    // отдаем страницу для редактирования
     // </summary>
     public async Task<IActionResult> Edit(int id)
     {
         try
         {
-            var author = await _context.Authors.Where(a => a.Id == id).FirstAsync();
+            var author = await _context.Authors.FirstOrDefaultAsync(a => a.Id == id);
             _logger.LogInformation("got author for edit: {@Author}", author);
             return View(author);
         }
@@ -131,6 +132,9 @@ public class AuthorsController : Controller
             _context.Update(author);
             await _context.SaveChangesAsync();
             _logger.LogInformation("author {@Author} updated successfully", author);
+
+            TempData["Success"] = "Данные автора обновлены";
+            return RedirectToAction("Edit");
         }
         catch (Exception e)
         {
