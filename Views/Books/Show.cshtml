@@ -1,10 +1,33 @@
 @model lib.Models.Book;
 
 @{
-    ViewData["Title"] = "Book Overview";
+    ViewData["Title"] = "Информация о книге";
 }
 
-<div>
-    <h1>Book</h1>
-    <p>@Model.Title</p>
+<h3>@Model.Title</h3>
+
+<div class="d-flex flex-column">
+    <span><b>Количество страниц</b>: @Model.PageCount</span>
+    <span>
+        <b>Автор:</b>
+        @if(Model.Author != null)
+        {
+            <a 
+                asp-controller="Authors" asp-action="Show"
+                asp-route-id="@Model.AuthorId"
+            >
+                @Model.Author.FullName
+            </a>
+        } 
+        else
+        {
+            <span>Н/Д</span>
+        }
+    </span>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
