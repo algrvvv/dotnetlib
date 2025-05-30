@@ -58,6 +58,56 @@ public class BooksController : Controller
         }
     }
 
+    public async Task<IActionResult> Create()
+    {
+        try
+        {
+            var authors = await _context.Authors.ToListAsync();
+            _logger.LogInformation("got authors for create new book. count: {Count}", authors.Count);
+
+
+            var createViewModel = new BookModifyViewModel
+            {
+                Authors = authors
+            };
+            return View(createViewModel);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to get authors for create new book");
+            TempData["Error"] = "Что то пошло не так";
+            return RedirectToAction("Index", "Home");
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(BookModifyViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("model state is invalid");
+            TempData["Error"] = "Получены некорректные данные";
+            return RedirectToAction("Index");
+        }
+
+        try
+        {
+            _context.Books.Add(viewModel.Book);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Книга добавлена";
+            _logger.LogInformation("new book {@Book} saved successfully", viewModel.Book);
+
+            return RedirectToAction("Index");
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to store new book");
+            ModelState.AddModelError(string.Empty, "Что то пошло не так");
+            return View(viewModel);
+        }
+    }
+
     }
 
     public IActionResult Edit(int id)

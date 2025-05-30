@@ -1,0 +1,41 @@
+@model lib.Models.BookModifyViewModel;
+
+@{
+    ViewData["Title"] = "Добавление новой книги";
+}
+
+
+<h3>Добавление новой книги</h3>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group">
+        <label for="Book.Title">Название</label>
+        <input type="text" placeholder="Название книги" class="form-control" asp-for="Book.Title">
+        <span asp-validation-for="Book.Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="Book.PageCount">Количество страниц</label>
+        <input type="number" placeholder="Количество страниц в книге" class="form-control" asp-for="Book.PageCount">
+        <span asp-validation-for="Book.PageCount" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="Book.AuthorId">Автор</label>
+        <select class="form-control" asp-for="Book.AuthorId" 
+            asp-items="@(new SelectList(Model.Authors, "Id", "FullName"))"
+        >
+            <option disabled selected>-- Выберите автора --</option>
+        </select>
+
+        <span asp-validation-for="Book.AuthorId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Добавить</button>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
