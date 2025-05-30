@@ -185,6 +185,33 @@ public class BooksController : Controller
         }
     }
 
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
+        {
+            var book = await _context.Books.FindAsync(id);
+            _logger.LogInformation("founded book for delete: {@Book}", book);
+
+            if (book == null)
+            {
+                _logger.LogInformation("attempt to get not existed book by id for delete: {Id}", id);
+                TempData["Error"] = "Книга не найдена";
+                return RedirectToAction("Index");
+            }
+
+            _context.Books.Remove(book);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("book by id ({Id}) deleted successfully", id);
+            TempData["Success"] = "Книга удалена";
+            return RedirectToAction("Index");
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to delete book by id: {Id}", id);
+            TempData["Error"] = "Что то пошло не так";
+            return RedirectToAction("Index");
+        }
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
