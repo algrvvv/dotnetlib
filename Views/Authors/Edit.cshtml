@@ -12,13 +12,13 @@
 
     <div class="form-group">
         <label for="FullName">ФИО</label>
-        <input type="text" class="form-control" asp-for="FullName">
+        <input type="text" placeholder="ФИО автора" class="form-control" asp-for="FullName">
         <span asp-validation-for="FullName" class="text-danger"></span>
     </div>
 
     <div class="form-group">
         <label for="Desc">Описание</label>
-        <textarea class="form-control" asp-for="Desc"></textarea>
+        <textarea class="form-control" placeholder="Короткое описание автора" asp-for="Desc"></textarea>
         <span asp-validation-for="Desc" class="text-danger"></span>
     </div>
 
