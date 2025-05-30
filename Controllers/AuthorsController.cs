@@ -113,14 +113,55 @@ public class AuthorsController : Controller
             ModelState.AddModelError(string.Empty, "Что то пошло не так");
             return View(author);
         }
-
-        return RedirectToAction("Edit");
     }
 
-    [HttpDelete]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        return Content("delete: " + id);
+        try
+        {
+            var author = await _context.Authors
+                .Include(a => a.Books)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            _logger.LogInformation("got author for delete by id: {@Author}", author);
+            return View(author);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to get author for delete by id: {Id}", id);
+            ModelState.AddModelError(string.Empty, "Что то пошло не так");
+            return RedirectToAction("Index");
+        }
+    }
+
+    [HttpPost, ActionName("Delete")]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        try
+        {
+            var author = await _context.Authors.FindAsync(id);
+            _logger.LogInformation("got author for delete action by id ({Id}): {@Author}", id, author);
+
+            if (author == null)
+            {
+                _logger.LogInformation("attempt to get not existed author by id: {Id}", id);
+                TempData["Error"] = "Автор не найден";
+                return RedirectToAction("Index");
+            }
+
+            _context.Authors.Remove(author);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("author by id ({Id}) deleted successfully", id);
+            TempData["Success"] = "Автор удален";
+            return RedirectToAction("Index");
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to delete author by id: {Id}", id);
+            TempData["Error"] = "Что то пошло не так";
+            return RedirectToAction("Delete");
+        }
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

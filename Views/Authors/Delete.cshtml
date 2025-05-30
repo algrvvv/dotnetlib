@@ -1,0 +1,38 @@
+@model lib.Models.Author;
+
+@{
+    ViewData["Title"] = "Удаление автора";
+}
+
+
+<h3>Удаление автора</h3>
+<hr>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id">
+    @* <span asp-validation-for="Id" class="text-danger" /> *@
+
+    <h5>Вы уверены, что хотите удалить автора?</h5>
+
+    <div class="d-flex flex-column">
+        <span><b>ФИО</b>: @Model.FullName</span>
+        <span><b>Описание</b>: @Model.Desc</span>
+        <span><b>Количество книг</b>: @(Model.Books == null ? 0 : Model.Books.Count)</span>
+    </div>
+
+    <div class="d-flex flex-column mt-3">
+        <div class="alert alert-danger" role="alert">
+            <h5 class="alert-heading">Внимание!</h5>
+            <hr>
+            <p class="mb-0">
+                При удалении автора, также будут удалены все привязанные к нему книги!
+            </p>
+        </div>
+
+        <button type="submit" class="btn btn-danger">Удалить</button>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
