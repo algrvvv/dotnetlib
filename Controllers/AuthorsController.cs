@@ -22,8 +22,19 @@ public class AuthorsController : Controller
     // </summary>
     public async Task<IActionResult> Index()
     {
-        var authors = await _context.Authors.ToListAsync();
-        return View(authors);
+        try
+        {
+            var authors = await _context.Authors
+                .Include(a => a.Books)
+                .ToListAsync();
+
+            return View(authors);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to get author list");
+            return RedirectToAction("Index", "Home");
+        }
     }
 
     /// <summary>
