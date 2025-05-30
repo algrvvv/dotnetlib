@@ -1,0 +1,35 @@
+@model lib.Models.Author;
+
+@{
+    ViewData["Title"] = "Информация об авторе";
+}
+
+<h3>@Model.FullName</h3>
+<p>@Model.Desc</p>
+
+@if (Model.Books != null && Model.Books.Count > 0)
+{
+    <h5>Список книг:</h5>
+    <div class="d-flex">
+        @foreach (var book in Model.Books)
+        {
+            <div class="card me-2" style="width: 15rem;">
+                <div class="card-body">
+                    <h5 class="card-title">@book.Title</h5>
+                    <p class="card-text"></p>
+                    <a asp-controller="Books" asp-action="Show" 
+                        asp-route-id="@book.Id" class="btn btn-primary"
+                    >
+                        Перейти
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

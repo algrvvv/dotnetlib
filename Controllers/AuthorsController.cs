@@ -41,9 +41,23 @@ public class AuthorsController : Controller
     /// отображение подробной информации об авторе
     /// </summary>
     /// <param name="id">айди автора для просмотра</param>
-    public IActionResult Show(int id)
+    public async Task<IActionResult> Show(int id)
     {
-        return Content("asdfasdfasdfasdf: " + id);
+        try
+        {
+            var author = await _context.Authors
+                .Include(a => a.Books)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            _logger.LogInformation("got author for show more info: {@Author}", author);
+            return View(author);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to get data for show author info");
+            TempData["Error"] = "Что то пошло не так";
+            return RedirectToAction("Index");
+        }
     }
 
     // <summary>
