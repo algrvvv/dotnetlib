@@ -13,21 +13,27 @@ public class Book
     public int Id { get; set; }
 
     // колво страниц в книге
-    [Required(ErrorMessage = "Колво страниц в книге является обязательным параметром")]
+    [Required(ErrorMessage = "Количество страниц в книге является обязательным параметром")]
+    [Range(1, int.MaxValue, ErrorMessage = "Количество страниц должно быть положительным")]
     [Column("page_count")]
     public int PageCount { get; set; }
 
     // название книги
     [Required(ErrorMessage = "Название книги является обязательным параметром")]
     [Column("title")]
-    public required string Title { get; set; }
+    public string? Title { get; set; }
 
     // привязка к автору
     [Required(ErrorMessage = "Автор книги является обязательным параметром")]
     [Column("author_id")]
-    public required int AuthorId { get; set; }
+    public int AuthorId { get; set; }
 
     // автор книги
     public Author? Author { get; set; }
+
+    public override string ToString()
+    {
+        return $"[Id: {Id}; Title: {Title}; PageCount: {PageCount}; AuthorId: {AuthorId}]";
+    }
 }
 
