@@ -108,11 +108,83 @@ public class BooksController : Controller
         }
     }
 
+    public async Task<IActionResult> Edit(int id)
+    {
+        try
+        {
+            // получаем доступных список авторов для привязки к книге
+            var authors = await _context.Authors.ToListAsync();
+            _logger.LogInformation("got authors for edit book. count: {Count}", authors.Count);
+
+            var book = await _context.Books
+                .Include(b => b.Author)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (book == null)
+            {
+                _logger.LogInformation("book for edit not found by id: {Id}", id);
+                TempData["Error"] = "Книга не найдена";
+                return RedirectToAction("Index");
+            }
+
+            _logger.LogInformation("found book by id ({Id}): {@Book}", id, book);
+            var viewModel = new BookModifyViewModel
+            {
+                Authors = authors,
+                Book = book,
+            };
+
+            return View(viewModel);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to get book or authors for update book by id: {Id}", id);
+            TempData["Error"] = "Что то пошло не так";
+            return RedirectToAction("Index");
+        }
     }
 
-    public IActionResult Edit(int id)
+    [HttpPost]
+    public async Task<IActionResult> Edit(int id, BookModifyViewModel viewModel)
     {
-        return Content("id: " + id);
+        if (!ModelState.IsValid)
+        {
+            _logger.LogInformation("got invalid model state for edit book");
+            TempData["Error"] = "Получены некорректные данные";
+            return RedirectToAction("Index");
+        }
+
+        try
+        {
+            var bookToUpdate = await _context.Books.FindAsync(id);
+            if (bookToUpdate == null)
+            {
+                _logger.LogInformation("book not found by id: {Id}", id);
+                TempData["Error"] = "Книга для редактирования не найдена";
+                return RedirectToAction("Index");
+            }
+
+            _logger.LogInformation("book for update by id ({Id}) found: {@Book}", id, bookToUpdate);
+
+            bookToUpdate.Title = viewModel.Book.Title;
+            bookToUpdate.PageCount = viewModel.Book.PageCount;
+            bookToUpdate.AuthorId = viewModel.Book.AuthorId;
+
+            _context.Update(bookToUpdate);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Данные книги обновлены";
+            _logger.LogInformation("book updated successfully: {@Book}", viewModel.Book);
+            return RedirectToAction("Edit");
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed to edit book");
+            TempData["Error"] = "Что то пошло не так";
+            return RedirectToAction("Index");
+        }
+    }
+
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
