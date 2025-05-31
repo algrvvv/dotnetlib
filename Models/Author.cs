@@ -31,7 +31,12 @@ public class Author
     /// <summary>
     ///  список книг, которые написал автор
     /// </summary>
-    public List<Book>? Books { get; set; }
+    public List<Book>? Books { get; set; } = new();
+
+    /// <summary>
+    /// список издательств, к которым привязан автор
+    /// </summary>
+    public List<AuthorPublisher> AuthorPublishers { get; set; } = new();
 
     public override string ToString()
     {
