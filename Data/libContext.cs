@@ -10,9 +10,6 @@ public class LibContext : DbContext
     public DbSet<Book> Books { get; set; }
     public DbSet<Author> Authors { get; set; }
 
-    // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //        => optionsBuilder.UseNpgsql("Ho:30st=localhost;Port=5432;Database=lib;Username=algrvvv;Password=");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -22,5 +19,19 @@ public class LibContext : DbContext
             .WithOne(a => a.Author)
             .HasForeignKey(b => b.AuthorId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AuthorPublisher>()
+            .HasKey(ap => ap.Id);
+
+        modelBuilder.Entity<AuthorPublisher>()
+            .HasOne(ap => ap.Author)
+            .WithMany(a => a.AuthorPublishers)
+            .HasForeignKey(ap => ap.AuthorId);
+
+
+        modelBuilder.Entity<AuthorPublisher>()
+            .HasOne(ap => ap.Publisher)
+            .WithMany(p => p.AuthorPublishers)
+            .HasForeignKey(ap => ap.PublisherId);
     }
 }
