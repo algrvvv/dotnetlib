@@ -25,11 +25,23 @@ aliases:
     cmds:
       - dotnet ef migrations add
 
-  remove-migrations:
+  remove-migration:
     aliases: [rm]
     desc: undo and remove migrations
     cmds:
       - dotnet ef migrations remove
+
+
+  migration-list:
+    desc: show migration list
+    aliases: [ml]
+    cmds:
+      - dotnet ef migrations list
+
+  mg:
+    desc: migration alias
+    cmds:
+      - dotnet ef migrations
 
   migrate:
     aliases: [m]
