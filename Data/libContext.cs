@@ -9,6 +9,8 @@ public class LibContext : DbContext
 
     public DbSet<Book> Books { get; set; }
     public DbSet<Author> Authors { get; set; }
+    public DbSet<Publisher> Publishers { get; set; }
+    public DbSet<AuthorPublisher> AuthorPublishers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

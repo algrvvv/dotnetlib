@@ -19,4 +19,9 @@ public class AuthorPublisher
     public int PublisherId { get; set; }
 
     public Publisher Publisher { get; set; } = null!;
+
+    public override string ToString()
+    {
+        return $"[AuthorId: {AuthorId}; PublisherId: {PublisherId}]";
+    }
 }
