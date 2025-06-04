@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+﻿using lib.Data;
 using lib.Models;
-using lib.Data;
+using lib.Services;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace lib.Controllers;
@@ -9,11 +10,13 @@ namespace lib.Controllers;
 public class BooksController : Controller
 {
     private readonly ILogger<BooksController> _logger;
+    private readonly IBookService _service;
     private readonly LibContext _context;
 
-    public BooksController(ILogger<BooksController> logger, LibContext context)
+    public BooksController(ILogger<BooksController> logger, LibContext context, IBookService service)
     {
         _logger = logger;
+        _service = service;
         _context = context;
     }
 
@@ -22,62 +25,38 @@ public class BooksController : Controller
     /// </summary>
     public async Task<IActionResult> Index()
     {
-        try
+        var res = await _service.GetBooksAsync();
+        if (!res.IsSuccess)
         {
-            var books = await _context.Books
-                .Include(b => b.Author)
-                .ToListAsync();
-
-            _logger.LogInformation("got books for index page. books count: {Count}", books.Count);
-            return View(books);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "failed to get books for index page");
-            TempData["Error"] = "Что то пошло не так";
+            TempData[res.Status] = res.Message;
             return RedirectToAction("Index", "Home");
         }
+
+        return View(res.Data);
     }
 
     public async Task<IActionResult> Show(int id)
     {
-        try
+        var res = await _service.GetBookByIdAsync(id);
+        if (!res.IsSuccess)
         {
-            var book = await _context.Books
-                .Include(b => b.Author)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            _logger.LogInformation("");
-            return View(book);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "failed to get data for show book info");
-            TempData["Error"] = "Что то пошло не так";
+            TempData[res.Status] = res.Message;
             return RedirectToAction("Index");
         }
+
+        return View(res.Data);
     }
 
     public async Task<IActionResult> Create()
     {
-        try
+        var res = await _service.GetModifyVM();
+        if (!res.IsSuccess)
         {
-            var authors = await _context.Authors.ToListAsync();
-            _logger.LogInformation("got authors for create new book. count: {Count}", authors.Count);
-
-
-            var createViewModel = new BookModifyViewModel
-            {
-                Authors = authors
-            };
-            return View(createViewModel);
+            TempData[res.Status] = res.Message;
+            return RedirectToAction("Index");
         }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "failed to get authors for create new book");
-            TempData["Error"] = "Что то пошло не так";
-            return RedirectToAction("Index", "Home");
-        }
+
+        return View(res.Data);
     }
 
     [HttpPost]
@@ -85,63 +64,31 @@ public class BooksController : Controller
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("model state is invalid");
             TempData["Error"] = "Получены некорректные данные";
             return RedirectToAction("Index");
         }
 
-        try
+        var res = await _service.StoreAsync(viewModel.Book);
+        if (!res.IsSuccess)
         {
-            _context.Books.Add(viewModel.Book);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Книга добавлена";
-            _logger.LogInformation("new book {@Book} saved successfully", viewModel.Book);
-
-            return RedirectToAction("Index");
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "failed to store new book");
-            ModelState.AddModelError(string.Empty, "Что то пошло не так");
+            TempData[res.Status] = res.Message;
             return View(viewModel);
         }
+
+        TempData[res.Status] = res.Message;
+        return RedirectToAction("Index");
     }
 
     public async Task<IActionResult> Edit(int id)
     {
-        try
+        var res = await _service.GetModifyVM(id);
+        if (!res.IsSuccess)
         {
-            // получаем доступных список авторов для привязки к книге
-            var authors = await _context.Authors.ToListAsync();
-            _logger.LogInformation("got authors for edit book. count: {Count}", authors.Count);
-
-            var book = await _context.Books
-                .Include(b => b.Author)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            if (book == null)
-            {
-                _logger.LogInformation("book for edit not found by id: {Id}", id);
-                TempData["Error"] = "Книга не найдена";
-                return RedirectToAction("Index");
-            }
-
-            _logger.LogInformation("found book by id ({Id}): {@Book}", id, book);
-            var viewModel = new BookModifyViewModel
-            {
-                Authors = authors,
-                Book = book,
-            };
-
-            return View(viewModel);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "failed to get book or authors for update book by id: {Id}", id);
-            TempData["Error"] = "Что то пошло не так";
+            TempData[res.Status] = res.Message;
             return RedirectToAction("Index");
         }
+
+        return View(res.Data);
     }
 
     [HttpPost]
@@ -149,69 +96,27 @@ public class BooksController : Controller
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogInformation("got invalid model state for edit book");
             TempData["Error"] = "Получены некорректные данные";
             return RedirectToAction("Index");
         }
 
-        try
+        var res = await _service.UpdateAsync(id, viewModel.Book);
+        if (!res.IsSuccess)
         {
-            var bookToUpdate = await _context.Books.FindAsync(id);
-            if (bookToUpdate == null)
-            {
-                _logger.LogInformation("book not found by id: {Id}", id);
-                TempData["Error"] = "Книга для редактирования не найдена";
-                return RedirectToAction("Index");
-            }
-
-            _logger.LogInformation("book for update by id ({Id}) found: {@Book}", id, bookToUpdate);
-
-            bookToUpdate.Title = viewModel.Book.Title;
-            bookToUpdate.PageCount = viewModel.Book.PageCount;
-            bookToUpdate.AuthorId = viewModel.Book.AuthorId;
-
-            _context.Update(bookToUpdate);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Данные книги обновлены";
-            _logger.LogInformation("book updated successfully: {@Book}", viewModel.Book);
-            return RedirectToAction("Edit");
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "failed to edit book");
-            TempData["Error"] = "Что то пошло не так";
+            TempData[res.Status] = res.Message;
             return RedirectToAction("Index");
         }
+
+        TempData[res.Status] = res.Message;
+        return RedirectToAction("Edit");
     }
 
+    [HttpPost]
     public async Task<IActionResult> Delete(int id)
     {
-        try
-        {
-            var book = await _context.Books.FindAsync(id);
-            _logger.LogInformation("founded book for delete: {@Book}", book);
-
-            if (book == null)
-            {
-                _logger.LogInformation("attempt to get not existed book by id for delete: {Id}", id);
-                TempData["Error"] = "Книга не найдена";
-                return RedirectToAction("Index");
-            }
-
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("book by id ({Id}) deleted successfully", id);
-            TempData["Success"] = "Книга удалена";
-            return RedirectToAction("Index");
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "failed to delete book by id: {Id}", id);
-            TempData["Error"] = "Что то пошло не так";
-            return RedirectToAction("Index");
-        }
+        var res = await _service.DeleteAsync(id);
+        TempData[res.Status] = res.Message;
+        return RedirectToAction("Index");
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
