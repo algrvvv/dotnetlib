@@ -1,4 +1,6 @@
 using lib.Data;
+using lib.Repositories;
+using lib.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,17 +8,23 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// own services and repos
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IBookService, BookService>();
+
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
+
+builder.Services.AddScoped<IPublisherRepository, PublisherRepository>();
+builder.Services.AddScoped<IPublisherService, PublisherService>();
+
+
 // simple add db context
 builder.Services.AddDbContext<LibContext>(opt =>
     opt.UseNpgsql(
         builder.Configuration.GetConnectionString("DatabaseConnectionString")
     )
 );
-
-// add db context POOL
-// builder.Services.AddDbContextPool<LibContext>(opt =>
-//     opt.UseNpgsql(builder.Configuration.GetConnectionString("LibContext"))
-// );
 
 var app = builder.Build();
 
