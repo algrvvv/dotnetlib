@@ -28,6 +28,28 @@
     </div>
 }
 
+@if (Model.AuthorPublishers != null && Model.AuthorPublishers.Count > 0)
+{
+    <h5 class="mt-3">Список издательств:</h5>
+    <div class="d-flex">
+        @foreach (var ap in Model.AuthorPublishers)
+        {
+            <div class="card me-2" style="width: 15rem;">
+                <div class="card-body">
+                    <h5 class="card-title">@ap.Publisher.Name</h5>
+                    <p class="card-text">@ap.Publisher.Desc</p>
+                    <a asp-controller="Publishers" asp-action="Show" 
+                        asp-route-id="@ap.PublisherId" class="btn btn-primary"
+                    >
+                        Перейти
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
