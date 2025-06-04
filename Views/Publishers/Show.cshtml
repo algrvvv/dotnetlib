@@ -1,0 +1,30 @@
+@model lib.Models.Publisher;
+
+@{
+    ViewData["Title"] = "Просмотр издательства";
+}
+
+<h3>@Model.Name</h3>
+<p>@Model.Desc</p>
+
+@if(Model.AuthorPublishers.Count > 0)
+{
+    <h5>Список книг:</h5>
+    <div class="d-flex">
+        @foreach (var ap in Model.AuthorPublishers)
+        {
+            <div class="card me-2" style="width: 15rem;">
+                <div class="card-body">
+                    <h5 class="card-title">@ap.Author.FullName</h5>
+                    <p class="card-text"></p>
+                    <a asp-controller="Authors" asp-action="Show" 
+                        asp-route-id="@ap.AuthorId" class="btn btn-primary"
+                    >
+                        Перейти
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}
+
